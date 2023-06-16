@@ -35,8 +35,8 @@ type CreateUserPayload = {
   activeVehicleId: string;
 };
 
-router.post("/create", async (req: Request, res: Response) => {
-  // ToDo: validate that all fields exist in req.body
+router.post("/user", async (req: Request, res: Response) => {
+  // ToDo: validate that all relevant fields exist in req.body
 
   try {
     await upsertUser(req.body as CreateUserPayload);

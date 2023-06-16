@@ -20,7 +20,7 @@ export class QueryBuilder {
   }
 
   upsert(tableName: string, data: Record<string, unknown>): this {
-    this.query.table(tableName).upsert(data);
+    this.query.table(tableName).insert(data).onConflict().merge();
     return this;
   }
 

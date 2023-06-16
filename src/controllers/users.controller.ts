@@ -1,5 +1,6 @@
 import { QueryBuilder } from "../db";
 import { User } from "../models";
+import { encrypt } from "../utils";
 
 const tableName = "users";
 
@@ -37,5 +38,11 @@ type UpsertUserData = {
 };
 
 export const upsertUser = async (data: UpsertUserData): Promise<void> => {
+  const dataToUpsert = { ...data };
+
+  if (dataToUpsert.password) {
+    dataToUpsert.password = await encrypt(dataToUpsert.password);
+  }
+
   await new QueryBuilder().upsert(tableName, data).execute();
 };
