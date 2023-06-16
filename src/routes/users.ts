@@ -22,6 +22,7 @@ router.get("/user", async (req: Request, res: Response) => {
         "first_name",
         "last_name",
         "phone_number",
+        "email",
         "customer_id",
         "active_vehicle_id"
       )
