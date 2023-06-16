@@ -1,6 +1,8 @@
 import { QueryBuilder } from "../db";
 import { ParkingArea, ParkingSlot, UserVehicles } from "../models";
 
+const tableName = "parking_slots";
+
 export const getParkingSlots = async (
   parkingAreaId: ParkingArea["id"]
 ): Promise<ParkingSlot[]> => {
@@ -13,7 +15,7 @@ export const getParkingSlots = async (
       "slot_type",
       "vehicle_id"
     )
-    .from("parking_slots")
+    .from(tableName)
     .where({ parking_area_id: parkingAreaId })
     .execute();
 };
@@ -23,7 +25,7 @@ export const updateSlotStatus = async (
   vehicleId: UserVehicles["vehicle_id"] | null
 ): Promise<void> => {
   await new QueryBuilder()
-    .update("parking_slots", { vehicle_id: vehicleId })
+    .update(tableName, { vehicle_id: vehicleId })
     .where({ id: slotId })
     .execute();
 };

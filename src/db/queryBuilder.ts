@@ -19,6 +19,11 @@ export class QueryBuilder {
     return this;
   }
 
+  upsert(tableName: string, data: Record<string, unknown>): this {
+    this.query.table(tableName).upsert(data);
+    return this;
+  }
+
   from(tableName: string): this {
     this.query.from(tableName);
     return this;

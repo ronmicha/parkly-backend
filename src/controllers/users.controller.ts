@@ -1,6 +1,8 @@
 import { QueryBuilder } from "../db";
 import { User } from "../models";
 
+const tableName = "users";
+
 type UserWithoutPassword = Omit<User, "password">;
 
 export const getUser = async (
@@ -16,13 +18,24 @@ export const getUser = async (
       "customer_id",
       "active_vehicle_id"
     )
-    .from("users")
+    .from(tableName)
     .where({ id: userId })
     .execute();
 
   return rows[0];
 };
 
-export const upsertUser = async (): Promise<void> => {
-  return;
+type UpsertUserData = {
+  id?: User["id"];
+  firstName?: User["first_name"];
+  lastName?: User["last_name"];
+  phoneNumber?: User["phone_number"];
+  email?: User["email"];
+  password?: User["password"];
+  vehicleIds?: string[];
+  activeVehicleId?: User["active_vehicle_id"];
+};
+
+export const upsertUser = async (data: UpsertUserData): Promise<void> => {
+  await new QueryBuilder().upsert(tableName, data).execute();
 };
