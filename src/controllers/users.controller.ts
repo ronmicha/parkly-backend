@@ -58,7 +58,7 @@ type UpsertUserData = {
   activeVehicleId?: User["active_vehicle_id"];
 };
 
-export const upsertUser = async (data: UpsertUserData): Promise<void> => {
+export const upsertUser = async (data: UpsertUserData): Promise<User> => {
   const normalizedUserData: Partial<User> = {
     id: data.id,
     first_name: data.firstName,
@@ -79,5 +79,9 @@ export const upsertUser = async (data: UpsertUserData): Promise<void> => {
     dataToUpsert.password = await encrypt(dataToUpsert.password);
   }
 
-  await new QueryBuilder().upsert(tableName, dataToUpsert, "id").execute();
+  const upsertedRows: User[] = await new QueryBuilder()
+    .upsert(tableName, dataToUpsert, "id")
+    .execute();
+
+  return upsertedRows[0];
 };

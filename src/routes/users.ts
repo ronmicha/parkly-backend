@@ -15,7 +15,7 @@ router.get("/user", async (req: Request, res: Response) => {
   }
 
   try {
-    const userData = getUser(userId);
+    const userData = await getUser(userId);
     res.json({ userData });
   } catch (e) {
     console.error(e);
@@ -39,8 +39,8 @@ router.post("/user", async (req: Request, res: Response) => {
   // ToDo: validate that all relevant fields exist in req.body
 
   try {
-    await upsertUser(req.body as CreateUserPayload);
-    res.sendStatus(StatusCodes.OK);
+    const user = await upsertUser(req.body as CreateUserPayload);
+    res.json({ user });
   } catch (e) {
     console.error(e);
     res
