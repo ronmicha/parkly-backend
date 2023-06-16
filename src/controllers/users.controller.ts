@@ -1,5 +1,5 @@
 import { QueryBuilder } from "../db";
-import { User } from "../models";
+import { Customer, User } from "../models";
 import { encrypt } from "../utils";
 
 const tableName = "users";
@@ -26,6 +26,27 @@ export const getUser = async (
   return rows[0];
 };
 
+const emailDomainToCustomerName: Record<string, string> = {
+  "viz.ai": "Viz.ai",
+};
+
+const getCustomerIdByEmail = async (email: string): Promise<Customer["id"]> => {
+  const emailDomain = email.substring(email.indexOf("@") + 1);
+  const customerName = emailDomainToCustomerName[emailDomain];
+
+  if (!customerName) {
+    throw new Error(`No customer is associated to email '${email}'`);
+  }
+
+  const rows: Array<Pick<Customer, "id">> = await new QueryBuilder()
+    .select("id")
+    .from("customers")
+    .where({ name: customerName })
+    .execute();
+
+  return rows[0].id;
+};
+
 type UpsertUserData = {
   id?: User["id"];
   firstName?: User["first_name"];
@@ -38,11 +59,25 @@ type UpsertUserData = {
 };
 
 export const upsertUser = async (data: UpsertUserData): Promise<void> => {
-  const dataToUpsert = { ...data };
+  const normalizedUserData: Partial<User> = {
+    id: data.id,
+    first_name: data.firstName,
+    last_name: data.lastName,
+    phone_number: data.phoneNumber,
+    email: data.email,
+    password: data.password,
+    active_vehicle_id: data.activeVehicleId,
+  };
+
+  const dataToUpsert = { ...normalizedUserData };
+
+  if (dataToUpsert.email) {
+    dataToUpsert.customer_id = await getCustomerIdByEmail(dataToUpsert.email);
+  }
 
   if (dataToUpsert.password) {
     dataToUpsert.password = await encrypt(dataToUpsert.password);
   }
 
-  await new QueryBuilder().upsert(tableName, data).execute();
+  await new QueryBuilder().upsert(tableName, dataToUpsert, "id").execute();
 };

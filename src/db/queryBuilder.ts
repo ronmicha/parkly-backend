@@ -19,8 +19,16 @@ export class QueryBuilder {
     return this;
   }
 
-  upsert(tableName: string, data: Record<string, unknown>): this {
-    this.query.table(tableName).insert(data).onConflict().merge();
+  upsert(
+    tableName: string,
+    data: Record<string, unknown>,
+    ...conflictingColumnNames: string[]
+  ): this {
+    this.query
+      .table(tableName)
+      .insert(data)
+      .onConflict(conflictingColumnNames)
+      .merge();
     return this;
   }
 
