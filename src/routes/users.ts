@@ -1,7 +1,6 @@
 import express, { Request, Response } from "express";
-import { QueryBuilder } from "../db";
-import { User } from "../models";
 import { StatusCodes } from "http-status-codes";
+import { getUser } from "../controllers/users.controller";
 
 const router = express.Router();
 
@@ -16,30 +15,7 @@ router.get("/user", async (req: Request, res: Response) => {
   }
 
   try {
-    const rows: User[] = await new QueryBuilder()
-      .select(
-        "id",
-        "first_name",
-        "last_name",
-        "phone_number",
-        "email",
-        "customer_id",
-        "active_vehicle_id"
-      )
-      .from("users")
-      .where({ id: userId })
-      .execute();
-
-    if (rows.length > 1) {
-      res.status(StatusCodes.BAD_REQUEST).json({
-        details: "Found multiple users that match the provided userId",
-        userId,
-      });
-      return;
-    }
-
-    const userData = rows[0];
-
+    const userData = getUser(userId);
     res.json({ userData });
   } catch (e) {
     console.error(e);
@@ -47,6 +23,22 @@ router.get("/user", async (req: Request, res: Response) => {
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ error: (e as Error).message });
   }
+});
+
+type UpsertUserPayload = {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  email: string;
+  password: string;
+  vehicleIds: string[];
+};
+
+router.post("/upsert", async (req: Request, res: Response) => {
+  const { firstName, lastName, phoneNumber, email, password, vehicleIds } =
+    req.body as UpsertUserPayload;
+
+  // ToDo: validate that all fields exist
 });
 
 export default router;

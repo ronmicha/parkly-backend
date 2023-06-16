@@ -1,7 +1,6 @@
 import express, { Request, Response } from "express";
-import { QueryBuilder } from "../db";
-import { ParkingArea } from "../models";
 import { StatusCodes } from "http-status-codes";
+import { getCustomerParkingAreas } from "../controllers/customerParkingAreas.controller";
 
 const router = express.Router();
 
@@ -16,18 +15,8 @@ router.get("/", async (req: Request, res: Response) => {
   }
 
   try {
-    const rows: ParkingArea[] = await new QueryBuilder()
-      .select("id", "name", "street_address", "city")
-      .from("parking_areas")
-      .innerJoin(
-        "customer_parking_areas",
-        "parking_areas.id",
-        "customer_parking_areas.parking_area_id"
-      )
-      .where({ customer_id: customerId })
-      .execute();
-
-    res.json({ parkingAreas: rows });
+    const parkingAreas = await getCustomerParkingAreas(customerId);
+    res.json({ parkingAreas });
   } catch (e) {
     console.error(e);
     res

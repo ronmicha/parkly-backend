@@ -1,14 +1,15 @@
 import express, { Request, Response } from "express";
-import { PgErrorCodes, QueryBuilder } from "../db";
-import { ParkingSlot } from "../models";
+import { PgErrorCodes } from "../db";
 import { DatabaseError } from "pg";
 import { StatusCodes } from "http-status-codes";
+import {
+  getParkingSlots,
+  updateSlotStatus,
+} from "../controllers/parkingSlots.controller";
 
 const router = express.Router();
 
 router.get("/", async (req: Request, res: Response) => {
-  type Row = Omit<ParkingSlot, "parking_area_id">;
-
   const parkingAreaId = req.query.parkingAreaId as string;
 
   if (!parkingAreaId) {
@@ -19,13 +20,8 @@ router.get("/", async (req: Request, res: Response) => {
   }
 
   try {
-    const rows: Row[] = await new QueryBuilder()
-      .select("id", "slot_number", "slot_floor", "slot_type", "vehicle_id")
-      .from("parking_slots")
-      .where({ parking_area_id: parkingAreaId })
-      .execute();
-
-    res.json({ parkingSlots: rows });
+    const parkingSlots = await getParkingSlots(parkingAreaId);
+    res.json({ parkingSlots });
   } catch (e) {
     console.error(e);
     res
@@ -38,11 +34,7 @@ router.post("/update-status", async (req: Request, res: Response) => {
   const { slotId, vehicleId } = req.body;
 
   try {
-    await new QueryBuilder()
-      .update("parking_slots", { vehicle_id: vehicleId })
-      .where({ id: slotId })
-      .execute();
-
+    await updateSlotStatus(slotId, vehicleId);
     res.sendStatus(StatusCodes.OK);
   } catch (e) {
     console.error(e);
