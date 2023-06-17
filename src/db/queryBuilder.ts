@@ -1,9 +1,13 @@
 import { dbClient } from "./client";
 
-type OrderByClause = {
-  column: string;
-  order?: "asc" | "desc";
-  nulls?: "first" | "last";
+type WriteOptions = {
+  tableName: string;
+  data: Record<string, unknown>;
+  returningColumns?: string[];
+};
+
+type UpsertOptions = WriteOptions & {
+  conflictingColumnNames: string[];
 };
 
 export class QueryBuilder {
@@ -14,21 +18,26 @@ export class QueryBuilder {
     return this;
   }
 
-  update(tableName: string, data: Record<string, unknown>): this {
-    this.query.table(tableName).update(data);
+  update({ tableName, data, returningColumns }: WriteOptions): this {
+    this.query
+      .table(tableName)
+      .update(data)
+      .returning(returningColumns || ["*"]);
     return this;
   }
 
-  upsert(
-    tableName: string,
-    data: Record<string, unknown>,
-    ...conflictingColumnNames: string[]
-  ): this {
+  upsert({
+    tableName,
+    data,
+    conflictingColumnNames,
+    returningColumns,
+  }: UpsertOptions): this {
     this.query
       .table(tableName)
       .insert(data)
       .onConflict(conflictingColumnNames)
-      .merge();
+      .merge()
+      .returning(returningColumns || ["*"]);
     return this;
   }
 
@@ -48,11 +57,6 @@ export class QueryBuilder {
 
   where(clause: Record<string, unknown>): this {
     this.query.where(clause);
-    return this;
-  }
-
-  orderBy(...clauses: OrderByClause[]): this {
-    this.query.orderBy(clauses);
     return this;
   }
 

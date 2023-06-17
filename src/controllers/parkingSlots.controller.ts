@@ -25,7 +25,7 @@ export const updateSlotStatus = async (
   vehicleId: UserVehicles["vehicle_id"] | null
 ): Promise<void> => {
   await new QueryBuilder()
-    .update(tableName, { vehicle_id: vehicleId })
+    .update({ tableName, data: { vehicle_id: vehicleId } })
     .where({ id: slotId })
     .execute();
 };

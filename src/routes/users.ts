@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { getUser, upsertUser } from "../controllers/users.controller";
+import { setSessionCookie } from "../utils";
 
 const router = express.Router();
 
@@ -35,12 +36,14 @@ type CreateUserPayload = {
   activeVehicleId: string;
 };
 
-router.post("/user", async (req: Request, res: Response) => {
+router.post("/create", async (req: Request, res: Response) => {
   // ToDo: validate that all relevant fields exist in req.body
 
+  res.cookie("token", "b", { httpOnly: true, secure: true, maxAge: 4 });
+
   try {
-    const user = await upsertUser(req.body as CreateUserPayload);
-    res.json({ user });
+    const userData = await upsertUser(req.body as CreateUserPayload);
+    setSessionCookie(res, userData).json({ userData });
   } catch (e) {
     console.error(e);
     res

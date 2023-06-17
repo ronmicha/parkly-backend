@@ -59,7 +59,7 @@ type UpsertUserData = {
 };
 
 export const upsertUser = async (data: UpsertUserData): Promise<User> => {
-  const normalizedUserData: Partial<User> = {
+  const dataToUpsert: Partial<User> = {
     id: data.id,
     first_name: data.firstName,
     last_name: data.lastName,
@@ -69,18 +69,19 @@ export const upsertUser = async (data: UpsertUserData): Promise<User> => {
     active_vehicle_id: data.activeVehicleId,
   };
 
-  const dataToUpsert = { ...normalizedUserData };
-
   if (dataToUpsert.email) {
     dataToUpsert.customer_id = await getCustomerIdByEmail(dataToUpsert.email);
   }
-
   if (dataToUpsert.password) {
     dataToUpsert.password = await encrypt(dataToUpsert.password);
   }
 
   const upsertedRows: User[] = await new QueryBuilder()
-    .upsert(tableName, dataToUpsert, "id")
+    .upsert({
+      tableName,
+      data: dataToUpsert,
+      conflictingColumnNames: ["id"],
+    })
     .execute();
 
   return upsertedRows[0];
