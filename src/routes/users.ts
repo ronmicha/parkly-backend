@@ -39,8 +39,6 @@ type CreateUserPayload = {
 router.post("/create", async (req: Request, res: Response) => {
   // ToDo: validate that all relevant fields exist in req.body
 
-  res.cookie("token", "b", { httpOnly: true, secure: true, maxAge: 4 });
-
   try {
     const userData = await upsertUser(req.body as CreateUserPayload);
     setSessionCookie(res, userData).json({ userData });

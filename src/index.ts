@@ -1,6 +1,7 @@
 import express, { Express } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import generalRouter from "./routes/general";
 import customerParkingAreasRouter from "./routes/customerParkingAreas";
 import parkingSlotsRouter from "./routes/parkingSlots";
@@ -13,6 +14,7 @@ const { PORT } = process.env;
 
 app.use(express.json());
 app.use(cors());
+app.use(cookieParser());
 
 app.use("/", generalRouter);
 app.use("/customer-parking-areas", customerParkingAreasRouter);
