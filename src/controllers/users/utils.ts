@@ -1,34 +1,22 @@
 import { QueryBuilder } from "../../db";
-import { Customer } from "../../models";
-
-const CUSTOMER_EMAIL_DOMAIN: Record<string, string> = {
-  "viz.ai": "Viz.ai",
-};
+import { Customer, CustomerEmailDomain } from "../../models";
 
 const getEmailDomain = (email: string): string => {
   const atIndex = email.indexOf("@");
   return email.substring(atIndex + 1);
 };
 
-const getCustomerName = (emailDomain: string): string => {
-  return CUSTOMER_EMAIL_DOMAIN[emailDomain];
-};
-
 export const getCustomerIdByEmail = async (
   email: string
 ): Promise<Customer["id"]> => {
   const emailDomain = getEmailDomain(email);
-  const customerName = getCustomerName(emailDomain);
 
-  if (!customerName) {
-    throw new Error(`Email '${email}' is not associated to any customer`);
-  }
+  const rows: Array<Pick<CustomerEmailDomain, "customer_id">> =
+    await new QueryBuilder()
+      .select("customer_id")
+      .from("customer_email_domain")
+      .where({ email_domain: emailDomain })
+      .execute();
 
-  const rows: Array<Pick<Customer, "id">> = await new QueryBuilder()
-    .select("id")
-    .from("customers")
-    .where({ name: customerName })
-    .execute();
-
-  return rows[0].id;
+  return rows[0].customer_id;
 };
