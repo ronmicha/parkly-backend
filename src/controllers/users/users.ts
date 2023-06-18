@@ -1,8 +1,8 @@
 import { QueryBuilder } from "../../db";
-import { User } from "../../models";
-import { encrypt } from "../../utils";
-import { getCustomerIdByEmail } from "./utils";
+import { Customer, CustomerEmailDomain, User } from "../../models";
 import { UpsertUserData, UserWithoutPassword } from "./types";
+import { encrypt } from "../../utils";
+import { getEmailDomain } from "./utils";
 
 const tableName = "users";
 
@@ -24,6 +24,19 @@ export const getUser = async (
     .execute();
 
   return rows[0];
+};
+
+const getCustomerIdByEmail = async (email: string): Promise<Customer["id"]> => {
+  const emailDomain = getEmailDomain(email);
+
+  const rows: Array<Pick<CustomerEmailDomain, "customer_id">> =
+    await new QueryBuilder()
+      .select("customer_id")
+      .from("customer_email_domain")
+      .where({ email_domain: emailDomain })
+      .execute();
+
+  return rows[0].customer_id;
 };
 
 export const upsertUser = async (data: UpsertUserData): Promise<User> => {
