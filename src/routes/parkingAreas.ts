@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
-import { getCustomerParkingAreas } from "../controllers/customerParkingAreas.controller";
+import { parkingAreasController } from "../controllers";
 
 const router = express.Router();
 
@@ -15,7 +15,9 @@ router.get("/", async (req: Request, res: Response) => {
   }
 
   try {
-    const parkingAreas = await getCustomerParkingAreas(customerId);
+    const parkingAreas = await parkingAreasController.getCustomerParkingAreas(
+      customerId
+    );
     res.json({ parkingAreas });
   } catch (e) {
     console.error(e);

@@ -1,5 +1,5 @@
-import { QueryBuilder } from "../db";
-import { Customer, ParkingArea } from "../models";
+import { QueryBuilder } from "../../db";
+import { Customer, ParkingArea } from "../../models";
 
 export const getCustomerParkingAreas = async (
   customerId: Customer["id"]

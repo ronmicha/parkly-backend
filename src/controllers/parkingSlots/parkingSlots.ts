@@ -1,5 +1,5 @@
-import { QueryBuilder } from "../db";
-import { ParkingArea, ParkingSlot, UserVehicles } from "../models";
+import { QueryBuilder } from "../../db";
+import { ParkingArea, ParkingSlot, UserVehicles } from "../../models";
 
 const tableName = "parking_slots";
 

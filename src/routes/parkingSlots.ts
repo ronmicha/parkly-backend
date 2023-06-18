@@ -1,11 +1,7 @@
 import express, { Request, Response } from "express";
-import { PgErrorCodes } from "../db";
-import { DatabaseError } from "pg";
+import { DatabaseError, PgErrorCodes } from "../db";
 import { StatusCodes } from "http-status-codes";
-import {
-  getParkingSlots,
-  updateSlotStatus,
-} from "../controllers/parkingSlots.controller";
+import { parkingSlotsController } from "../controllers";
 
 const router = express.Router();
 
@@ -20,7 +16,9 @@ router.get("/", async (req: Request, res: Response) => {
   }
 
   try {
-    const parkingSlots = await getParkingSlots(parkingAreaId);
+    const parkingSlots = await parkingSlotsController.getParkingSlots(
+      parkingAreaId
+    );
     res.json({ parkingSlots });
   } catch (e) {
     console.error(e);
@@ -34,7 +32,7 @@ router.post("/update-status", async (req: Request, res: Response) => {
   const { slotId, vehicleId } = req.body;
 
   try {
-    await updateSlotStatus(slotId, vehicleId);
+    await parkingSlotsController.updateSlotStatus(slotId, vehicleId);
     res.sendStatus(StatusCodes.OK);
   } catch (e) {
     console.error(e);

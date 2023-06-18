@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import generalRouter from "./routes/general";
-import customerParkingAreasRouter from "./routes/customerParkingAreas";
+import parkingAreasRouter from "./routes/parkingAreas";
 import parkingSlotsRouter from "./routes/parkingSlots";
 import usersRouter from "./routes/users";
 
@@ -17,7 +17,7 @@ app.use(cors());
 app.use(cookieParser());
 
 app.use("/", generalRouter);
-app.use("/customer-parking-areas", customerParkingAreasRouter);
+app.use("/parking-areas", parkingAreasRouter);
 app.use("/parking-slots", parkingSlotsRouter);
 app.use("/users", usersRouter);
 
