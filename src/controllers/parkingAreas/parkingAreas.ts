@@ -1,9 +1,9 @@
 import { QueryBuilder } from "../../db";
-import { Customer, ParkingArea } from "../../models";
+import { DB_Customer, DB_ParkingArea } from "../../models";
 
 export const getCustomerParkingAreas = async (
-  customerId: Customer["id"]
-): Promise<ParkingArea[]> => {
+  customerId: DB_Customer["id"]
+): Promise<DB_ParkingArea[]> => {
   return new QueryBuilder()
     .select("id", "name", "street_address", "city")
     .from("parking_areas")

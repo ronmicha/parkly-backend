@@ -1,13 +1,19 @@
 import { QueryBuilder } from "../../db";
-import { Customer, CustomerEmailDomain, User } from "../../models";
-import { UpsertUserData, UserWithoutPassword } from "./types";
+import {
+  DB_Customer,
+  DB_CustomerEmailDomain,
+  DB_User,
+  User,
+} from "../../models";
 import { encrypt } from "../../utils";
 import { getEmailDomain } from "./utils";
+
+export type UserWithoutPassword = Omit<DB_User, "password">;
 
 const tableName = "users";
 
 export const getUser = async (
-  userId: User["id"]
+  userId: DB_User["id"]
 ): Promise<UserWithoutPassword> => {
   const rows: UserWithoutPassword[] = await new QueryBuilder()
     .select(
@@ -26,10 +32,12 @@ export const getUser = async (
   return rows[0];
 };
 
-const getCustomerIdByEmail = async (email: string): Promise<Customer["id"]> => {
+const getCustomerIdByEmail = async (
+  email: string
+): Promise<DB_Customer["id"]> => {
   const emailDomain = getEmailDomain(email);
 
-  const rows: Array<Pick<CustomerEmailDomain, "customer_id">> =
+  const rows: Array<Pick<DB_CustomerEmailDomain, "customer_id">> =
     await new QueryBuilder()
       .select("customer_id")
       .from("customer_email_domain")
@@ -39,8 +47,8 @@ const getCustomerIdByEmail = async (email: string): Promise<Customer["id"]> => {
   return rows[0].customer_id;
 };
 
-export const upsertUser = async (data: UpsertUserData): Promise<User> => {
-  const dataToUpsert: Partial<User> = {
+export const upsertUser = async (data: Partial<User>): Promise<DB_User> => {
+  const dataToUpsert: Partial<DB_User> = {
     id: data.id,
     first_name: data.firstName,
     last_name: data.lastName,
@@ -57,7 +65,7 @@ export const upsertUser = async (data: UpsertUserData): Promise<User> => {
     dataToUpsert.password = await encrypt(dataToUpsert.password);
   }
 
-  const upsertedRows: User[] = await new QueryBuilder()
+  const upsertedRows: DB_User[] = await new QueryBuilder()
     .upsert({
       tableName,
       data: dataToUpsert,

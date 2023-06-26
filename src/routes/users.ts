@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { usersController } from "../controllers";
 import { setSessionCookie } from "../utils";
+import { User } from "../models";
 
 const router = express.Router();
 
@@ -26,23 +27,11 @@ router.get("/user", async (req: Request, res: Response) => {
   }
 });
 
-type CreateUserPayload = {
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-  email: string;
-  password: string;
-  vehicleIds: string[];
-  activeVehicleId: string;
-};
-
-router.post("/create", async (req: Request, res: Response) => {
+router.post("/signup", async (req: Request, res: Response) => {
   // ToDo: validate that all relevant fields exist in req.body
 
   try {
-    const userData = await usersController.upsertUser(
-      req.body as CreateUserPayload
-    );
+    const userData = await usersController.upsertUser(req.body as User);
     setSessionCookie(res, userData).json({ userData });
   } catch (e) {
     console.error(e);

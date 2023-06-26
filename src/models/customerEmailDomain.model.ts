@@ -1,6 +1,6 @@
-import { Customer } from "./customer.model";
+import { DB_Customer } from "./customer.model";
 
-export type CustomerEmailDomain = {
+export type DB_CustomerEmailDomain = {
   email_domain: string;
-  customer_id: Customer["id"];
+  customer_id: DB_Customer["id"];
 };

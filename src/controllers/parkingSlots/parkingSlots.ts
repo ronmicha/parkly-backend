@@ -1,11 +1,11 @@
 import { QueryBuilder } from "../../db";
-import { ParkingArea, ParkingSlot, UserVehicles } from "../../models";
+import { DB_ParkingArea, DB_ParkingSlot, DB_UserVehicles } from "../../models";
 
 const tableName = "parking_slots";
 
 export const getParkingSlots = async (
-  parkingAreaId: ParkingArea["id"]
-): Promise<ParkingSlot[]> => {
+  parkingAreaId: DB_ParkingArea["id"]
+): Promise<DB_ParkingSlot[]> => {
   return new QueryBuilder()
     .select(
       "id",
@@ -21,8 +21,8 @@ export const getParkingSlots = async (
 };
 
 export const updateSlotStatus = async (
-  slotId: ParkingSlot["id"],
-  vehicleId: UserVehicles["vehicle_id"] | null
+  slotId: DB_ParkingSlot["id"],
+  vehicleId: DB_UserVehicles["vehicle_id"] | null
 ): Promise<void> => {
   await new QueryBuilder()
     .update({ tableName, data: { vehicle_id: vehicleId } })

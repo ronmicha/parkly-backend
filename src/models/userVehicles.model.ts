@@ -1,6 +1,6 @@
-import { User } from "./user.model";
+import { DB_User } from "./user.model";
 
-export type UserVehicles = {
-  user_id: User["id"];
+export type DB_UserVehicles = {
+  user_id: DB_User["id"];
   vehicle_id: string;
 };
