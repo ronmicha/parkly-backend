@@ -47,15 +47,15 @@ const getCustomerIdByEmail = async (
   return rows[0].customer_id;
 };
 
-export const upsertUser = async (data: Partial<User>): Promise<DB_User> => {
+export const upsertUser = async (user: Partial<User>): Promise<DB_User> => {
   const dataToUpsert: Partial<DB_User> = {
-    id: data.id,
-    first_name: data.firstName,
-    last_name: data.lastName,
-    phone_number: data.phoneNumber,
-    email: data.email,
-    password: data.password,
-    active_vehicle_id: data.activeVehicleId,
+    id: user.id,
+    first_name: user.firstName,
+    last_name: user.lastName,
+    phone_number: user.phoneNumber,
+    email: user.email,
+    password: user.password,
+    active_vehicle_id: user.activeVehicleId,
   };
 
   if (dataToUpsert.email) {

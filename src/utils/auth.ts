@@ -8,6 +8,7 @@ export const setSessionCookie = (res: Response, user: DB_User): Response => {
   res.cookie(SESSION_COOKIE_NAME, user, {
     httpOnly: true,
     secure: true,
+    sameSite: "none",
     maxAge: SESSION_COOKIE_AGE,
   });
   return res;
