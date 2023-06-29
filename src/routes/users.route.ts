@@ -1,12 +1,12 @@
 import express, { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { usersController } from "../controllers";
-import { SESSION_COOKIE_NAME, setSessionCookie } from "../utils";
-import { DB_User, User } from "../models";
+import { getUserId, setSessionCookie } from "../utils";
+import { User } from "../models";
 
 const router = express.Router();
 
-router.post("/signup", async (req: Request, res: Response) => {
+router.post("/create", async (req: Request, res: Response) => {
   // ToDo: validate that all relevant fields exist in req.body
 
   try {
@@ -20,16 +20,19 @@ router.post("/signup", async (req: Request, res: Response) => {
   }
 });
 
-router.get("/user", async (req: Request, res: Response) => {
-  const user: DB_User = req.cookies[SESSION_COOKIE_NAME];
-  const userId = user.id as string;
+router.post("/login", async (req: Request, res: Response) => {
+  const { email, password } = req.body;
 
-  if (!userId) {
-    res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ error: "Parameter 'userId' is missing" });
+  if (!(email && password)) {
+    res.status(StatusCodes.BAD_REQUEST).json({
+      error: "email or password parameters are missing",
+    });
     return;
   }
+});
+
+router.get("/user", async (req: Request, res: Response) => {
+  const userId = getUserId(req);
 
   try {
     const userData = await usersController.getUser(userId);

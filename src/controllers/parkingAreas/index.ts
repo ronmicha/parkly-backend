@@ -1,1 +1,1 @@
-export * as parkingAreasController from "./parkingAreas";
+export * as parkingAreasController from "./parkingAreas.controller";
