@@ -1,50 +1,29 @@
 import { QueryBuilder } from "../../db";
-import {
-  DB_Customer,
-  DB_CustomerEmailDomain,
-  DB_User,
-  User,
-} from "../../models";
-import { encrypt } from "../../utils";
-import { getEmailDomain } from "./utils";
+import { DB_User, User } from "../../models";
+import { encrypt, isEncryptedEqual } from "../../utils";
+import { InvalidLogin, UserDoesntExist } from "./errors";
 
-export type UserWithoutPassword = Omit<DB_User, "password">;
+type GetUserOptions = Partial<DB_User>;
 
 const tableName = "users";
 
-export const getUser = async (
-  userId: DB_User["id"]
-): Promise<UserWithoutPassword> => {
-  const rows: UserWithoutPassword[] = await new QueryBuilder()
+export const getUser = async (options: GetUserOptions): Promise<DB_User> => {
+  const rows: DB_User[] = await new QueryBuilder()
     .select(
       "id",
       "first_name",
       "last_name",
       "phone_number",
       "email",
+      "password",
       "customer_id",
       "active_vehicle_id"
     )
     .from(tableName)
-    .where({ id: userId })
+    .where(options)
     .execute();
 
   return rows[0];
-};
-
-const getCustomerIdByEmail = async (
-  email: string
-): Promise<DB_Customer["id"]> => {
-  const emailDomain = getEmailDomain(email);
-
-  const rows: Array<Pick<DB_CustomerEmailDomain, "customer_id">> =
-    await new QueryBuilder()
-      .select("customer_id")
-      .from("customer_email_domain")
-      .where({ email_domain: emailDomain })
-      .execute();
-
-  return rows[0].customer_id;
 };
 
 export const upsertUser = async (user: Partial<User>): Promise<DB_User> => {
@@ -55,12 +34,10 @@ export const upsertUser = async (user: Partial<User>): Promise<DB_User> => {
     phone_number: user.phoneNumber,
     email: user.email,
     password: user.password,
+    customer_id: user.customerId,
     active_vehicle_id: user.activeVehicleId,
   };
 
-  if (dataToUpsert.email) {
-    dataToUpsert.customer_id = await getCustomerIdByEmail(dataToUpsert.email);
-  }
   if (dataToUpsert.password) {
     dataToUpsert.password = await encrypt(dataToUpsert.password);
   }
@@ -74,4 +51,25 @@ export const upsertUser = async (user: Partial<User>): Promise<DB_User> => {
     .execute();
 
   return upsertedRows[0];
+};
+
+export const validateLogin = async (
+  phoneNumber: string,
+  password: string
+): Promise<DB_User> => {
+  const userData = await getUser({
+    phone_number: phoneNumber,
+  });
+
+  if (!userData) {
+    throw new UserDoesntExist({ phoneNumber });
+  }
+
+  const isCorrectPassword = await isEncryptedEqual(password, userData.password);
+
+  if (!isCorrectPassword) {
+    throw new InvalidLogin({ phoneNumber });
+  }
+
+  return userData;
 };

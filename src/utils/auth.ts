@@ -12,7 +12,7 @@ const SESSION_COOKIE_OPTIONS: CookieOptions = {
 };
 
 export const setSessionCookie = (res: Response, user: DB_User): Response => {
-  const value = { id: user.id, role: "" };
+  const value = { id: user.id, role: "" }; // ToDo
   res.cookie(SESSION_COOKIE_NAME, value, SESSION_COOKIE_OPTIONS);
   return res;
 };
