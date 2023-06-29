@@ -3,11 +3,9 @@ import { DB_User, User } from "../../models";
 import { encrypt, isEncryptedEqual } from "../../utils";
 import { InvalidLogin, UserDoesntExist } from "./errors";
 
-type GetUserOptions = Partial<DB_User>;
-
 const tableName = "users";
 
-export const getUser = async (options: GetUserOptions): Promise<DB_User> => {
+export const getUser = async (options: Partial<DB_User>): Promise<DB_User> => {
   const rows: DB_User[] = await new QueryBuilder()
     .select(
       "id",
