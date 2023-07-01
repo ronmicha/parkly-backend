@@ -1,8 +1,7 @@
 import express, { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { InvalidLogin, UserDoesntExist, usersController } from "../controllers";
-import { getUserId, setSessionCookie } from "../utils";
-import { User } from "../models";
+import { getUserDataFromCookie, setSessionCookie } from "../utils";
 import { validateLogin } from "../controllers/users/users.controller";
 
 const router = express.Router();
@@ -11,7 +10,7 @@ router.post("/create", async (req: Request, res: Response) => {
   // ToDo: validate that all relevant fields exist in req.body
 
   try {
-    const userData = await usersController.upsertUser(req.body as User);
+    const userData = await usersController.upsertUser(req.body);
     res.json({ userData });
   } catch (e) {
     console.error(e);
@@ -33,7 +32,7 @@ router.post("/login", async (req: Request, res: Response) => {
 
   try {
     const userData = await validateLogin(phoneNumber, password);
-    setSessionCookie(res, userData).sendStatus(StatusCodes.OK);
+    setSessionCookie(res, userData).json({ userData });
   } catch (e) {
     console.error(e);
 
@@ -50,10 +49,10 @@ router.post("/login", async (req: Request, res: Response) => {
 });
 
 router.get("/user", async (req: Request, res: Response) => {
-  const userId = getUserId(req);
+  const { id } = getUserDataFromCookie(req)!;
 
   try {
-    const userData = await usersController.getUser({ id: userId });
+    const userData = await usersController.getUser({ id });
     res.json({ userData });
   } catch (e) {
     console.error(e);

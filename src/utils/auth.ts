@@ -2,8 +2,13 @@ import { Request, Response } from "express";
 import { CookieOptions } from "express-serve-static-core";
 import { DB_User } from "../models";
 
+type CookieValue = {
+  id: DB_User["id"];
+  role: string;
+};
+
 const SESSION_COOKIE_NAME = "session";
-const SESSION_COOKIE_AGE = 365 * 24 * 60 * 60; // a year in seconds
+const SESSION_COOKIE_AGE = 365 * 24 * 60 * 60; // 1 year in seconds
 const SESSION_COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
   secure: true,
@@ -12,11 +17,13 @@ const SESSION_COOKIE_OPTIONS: CookieOptions = {
 };
 
 export const setSessionCookie = (res: Response, user: DB_User): Response => {
-  const value = { id: user.id, role: "" }; // ToDo
+  const value: CookieValue = { id: user.id, role: "" }; // ToDo
   res.cookie(SESSION_COOKIE_NAME, value, SESSION_COOKIE_OPTIONS);
   return res;
 };
 
-export const getUserId = (req: Request): DB_User["id"] => {
+export const getUserDataFromCookie = (
+  req: Request
+): CookieValue | undefined => {
   return req.cookies[SESSION_COOKIE_NAME];
 };

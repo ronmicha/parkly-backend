@@ -2,7 +2,7 @@ import { dbClient } from "./client";
 
 type WriteOptions = {
   tableName: string;
-  data: Record<string, unknown>;
+  data: Record<string, unknown> | Array<Record<string, unknown>>;
   returningColumns?: string[];
 };
 
@@ -10,6 +10,7 @@ type UpsertOptions = WriteOptions & {
   conflictingColumnNames: string[];
 };
 
+// ToDo - add support to transactions
 export class QueryBuilder {
   private query = dbClient.queryBuilder();
 

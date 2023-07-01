@@ -24,7 +24,9 @@ export const getUser = async (options: Partial<DB_User>): Promise<DB_User> => {
   return rows[0];
 };
 
-export const upsertUser = async (user: Partial<User>): Promise<DB_User> => {
+type UpsertData = Partial<User & { vehicleIds: string[] }>;
+
+export const upsertUser = async (user: UpsertData): Promise<DB_User> => {
   const dataToUpsert: Partial<DB_User> = {
     id: user.id,
     first_name: user.firstName,
@@ -48,7 +50,24 @@ export const upsertUser = async (user: Partial<User>): Promise<DB_User> => {
     })
     .execute();
 
-  return upsertedRows[0];
+  const upsertedUser = upsertedRows[0];
+
+  if (user.vehicleIds) {
+    const data = user.vehicleIds.map((vehicleId) => ({
+      user_id: upsertedUser.id,
+      vehicle_id: vehicleId,
+    }));
+
+    await new QueryBuilder()
+      .upsert({
+        tableName: "user_vehicles",
+        data,
+        conflictingColumnNames: ["vehicle_id"],
+      })
+      .execute();
+  }
+
+  return upsertedUser;
 };
 
 export const validateLogin = async (
