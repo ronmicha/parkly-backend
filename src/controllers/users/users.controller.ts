@@ -26,6 +26,7 @@ export const getUser = async (options: Partial<DB_User>): Promise<DB_User> => {
 
 type UpsertData = Partial<User & { vehicleIds: string[] }>;
 
+// ToDo - this function should be wrapped in a transaction
 export const upsertUser = async (user: UpsertData): Promise<DB_User> => {
   const dataToUpsert: Partial<DB_User> = {
     id: user.id,

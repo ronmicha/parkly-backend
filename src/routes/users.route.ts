@@ -48,7 +48,7 @@ router.post("/login", async (req: Request, res: Response) => {
   }
 });
 
-router.get("/user", async (req: Request, res: Response) => {
+router.get("/me", async (req: Request, res: Response) => {
   const { id } = getUserDataFromCookie(req)!;
 
   try {
