@@ -7,6 +7,13 @@ const router = express.Router();
 router.get("/users", async (req: Request, res: Response) => {
   const customerId = req.query.customerId as string;
 
+  if (!customerId) {
+    res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ error: "Parameter 'customerId' is missing" });
+    return;
+  }
+
   try {
     const users = await adminController.getCustomerUsers(customerId);
     res.json({ users });
