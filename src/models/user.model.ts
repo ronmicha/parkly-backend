@@ -9,6 +9,7 @@ export type DB_User = {
   phone_number: string;
   email: string;
   password: string;
+  role: "admin" | null;
   customer_id: DB_Customer["id"];
   active_vehicle_id: DB_UserVehicles["vehicle_id"];
 };

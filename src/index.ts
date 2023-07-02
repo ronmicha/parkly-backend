@@ -7,6 +7,7 @@ import generalRouter from "./routes/general.route";
 import parkingAreasRouter from "./routes/parkingAreas.route";
 import parkingSlotsRouter from "./routes/parkingSlots.route";
 import usersRouter from "./routes/users.route";
+import adminRouter from "./routes/admin.route";
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use("/", generalRouter);
 app.use("/parking-areas", parkingAreasRouter);
 app.use("/parking-slots", parkingSlotsRouter);
 app.use("/users", usersRouter);
+app.use("/admin", adminRouter);
 
 app.listen(PORT, () => {
   console.log(`⚡️ Server is running at http://localhost:${PORT}`);

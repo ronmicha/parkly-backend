@@ -6,20 +6,6 @@ import { validateLogin } from "../controllers/users/users.controller";
 
 const router = express.Router();
 
-router.post("/create", async (req: Request, res: Response) => {
-  // ToDo: validate that all relevant fields exist in req.body
-
-  try {
-    const userData = await usersController.upsertUser(req.body);
-    res.json({ userData });
-  } catch (e) {
-    console.error(e);
-    res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: (e as Error).message });
-  }
-});
-
 router.post("/login", async (req: Request, res: Response) => {
   const { phoneNumber, password } = req.body;
 
