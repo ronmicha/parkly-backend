@@ -19,6 +19,14 @@ export class QueryBuilder {
     return this;
   }
 
+  insert({ tableName, data, returningColumns }: WriteOptions): this {
+    this.query
+      .table(tableName)
+      .insert(data)
+      .returning(returningColumns || ["*"]);
+    return this;
+  }
+
   update({ tableName, data, returningColumns }: WriteOptions): this {
     this.query
       .table(tableName)

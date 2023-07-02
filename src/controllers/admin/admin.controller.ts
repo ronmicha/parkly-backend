@@ -1,6 +1,43 @@
-import { DB_User, User } from "../../models";
+import { DB_Customer, DB_User, User } from "../../models";
 import { encrypt } from "../../utils";
 import { QueryBuilder } from "../../db";
+import { INITIAL_PASSWORD } from "./consts";
+
+export const getCustomerUsers = async (
+  customerId: DB_Customer["id"]
+): Promise<DB_User[]> => {
+  return await new QueryBuilder()
+    .select("*")
+    .from("users")
+    .where({ customer_id: customerId })
+    .execute();
+};
+
+type CreateUserData = Omit<User, "id" | "password" | "activeVehicleId">;
+
+export const createUser = async (
+  userData: CreateUserData
+): Promise<DB_User> => {
+  const dataToInsert: Omit<DB_User, "id"> = {
+    first_name: userData.firstName,
+    last_name: userData.lastName,
+    phone_number: userData.phoneNumber,
+    email: userData.email,
+    role: userData.role,
+    password: await encrypt(INITIAL_PASSWORD),
+    customer_id: userData.customerId,
+    active_vehicle_id: "",
+  };
+
+  const insertedRows = await new QueryBuilder()
+    .insert({
+      tableName: "users",
+      data: dataToInsert,
+    })
+    .execute();
+
+  return insertedRows[0];
+};
 
 type UpsertData = Partial<User & { vehicleIds: string[] }>;
 

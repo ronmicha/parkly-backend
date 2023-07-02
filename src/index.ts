@@ -26,7 +26,6 @@ app.use("/parking-slots", parkingSlotsRouter);
 app.use("/users", usersRouter);
 
 app.use(adminAuth);
-
 app.use("/admin", adminRouter);
 
 app.listen(PORT, () => {
