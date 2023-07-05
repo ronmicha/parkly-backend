@@ -2,14 +2,27 @@ import { DB_Customer, DB_User, User } from "../../models";
 import { encrypt } from "../../utils";
 import { QueryBuilder } from "../../db";
 import { INITIAL_PASSWORD } from "./consts";
+import { dbClient } from "../../db/client";
+
+type CustomerUser = DB_User & { vehicleIds: string[] };
 
 export const getCustomerUsers = async (
   customerId: DB_Customer["id"]
-): Promise<DB_User[]> => {
+): Promise<CustomerUser[]> => {
   return await new QueryBuilder()
-    .select("*")
+    .select(
+      "id",
+      "first_name",
+      "last_name",
+      "phone_number",
+      "email",
+      "role",
+      dbClient.raw("ARRAY_AGG(user_vehicles.vehicle_id) as vehicle_ids")
+    )
     .from("users")
+    .leftJoin("user_vehicles", "users.id", "user_vehicles.user_id")
     .where({ customer_id: customerId })
+    .groupBy("users.id")
     .execute();
 };
 

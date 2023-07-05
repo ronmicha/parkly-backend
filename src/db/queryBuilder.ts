@@ -10,11 +10,11 @@ type UpsertOptions = WriteOptions & {
   conflictingColumnNames: string[];
 };
 
-// ToDo - add support to transactions
+// ToDo - add support of transactions
 export class QueryBuilder {
   private query = dbClient.queryBuilder();
 
-  select(...columnNames: string[]): this {
+  select(...columnNames: (string | unknown)[]): this {
     this.query.select(columnNames);
     return this;
   }
@@ -64,8 +64,18 @@ export class QueryBuilder {
     return this;
   }
 
+  leftJoin(tableName: string, firstColumn: string, secondColumn: string): this {
+    this.query.leftJoin(tableName, firstColumn, secondColumn);
+    return this;
+  }
+
   where(clause: Record<string, unknown>): this {
     this.query.where(clause);
+    return this;
+  }
+
+  groupBy(...columnNames: string[]) {
+    this.query.groupBy(columnNames);
     return this;
   }
 
