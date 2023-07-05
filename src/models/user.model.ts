@@ -11,7 +11,7 @@ export type DB_User = {
   password: string;
   role: "admin" | null;
   customer_id: DB_Customer["id"];
-  active_vehicle_id: DB_UserVehicles["vehicle_id"];
+  active_vehicle_id: DB_UserVehicles["vehicle_id"] | null;
 };
 
 export type User = Camelize<DB_User>;

@@ -9,8 +9,8 @@ router.get("/users", async (req: Request, res: Response) => {
 
   if (!customerId) {
     res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ error: "Parameter 'customerId' is missing" });
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ error: "Parameter 'customerId' is missing" });
     return;
   }
 
@@ -30,6 +30,20 @@ router.post("/create-user", async (req: Request, res: Response) => {
 
   try {
     const userData = await adminController.createUser(req.body);
+    res.json({ userData });
+  } catch (e) {
+    console.error(e);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: (e as Error).message });
+  }
+});
+
+router.post("/update-user", async (req: Request, res: Response) => {
+  // ToDo: validate that all relevant fields exist in req.body
+
+  try {
+    const userData = await adminController.updateUser(req.body);
     res.json({ userData });
   } catch (e) {
     console.error(e);

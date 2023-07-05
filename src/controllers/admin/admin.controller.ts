@@ -1,10 +1,13 @@
-import { DB_Customer, DB_User, User } from "../../models";
+import { DB_Customer, DB_User, DB_UserVehicles, User } from "../../models";
 import { encrypt } from "../../utils";
 import { QueryBuilder } from "../../db";
 import { INITIAL_PASSWORD } from "./consts";
 import { dbClient } from "../../db/client";
 
-type CustomerUser = DB_User & { vehicleIds: string[] };
+type CustomerUser = Pick<
+  DB_User,
+  "id" | "first_name" | "last_name" | "phone_number" | "email" | "role"
+> & { vehicle_ids: Array<DB_UserVehicles["vehicle_id"]> };
 
 export const getCustomerUsers = async (
   customerId: DB_Customer["id"]
@@ -26,12 +29,16 @@ export const getCustomerUsers = async (
     .execute();
 };
 
-type CreateUserData = Omit<User, "id" | "password" | "activeVehicleId">;
+type CreateUserData = Omit<User, "id" | "password" | "activeVehicleId"> & {
+  vehicleIds?: string[];
+};
+
+// ToDo - the create/updateUser functions should be wrapped in a transaction
 
 export const createUser = async (
   userData: CreateUserData
 ): Promise<DB_User> => {
-  const dataToInsert: Omit<DB_User, "id"> = {
+  const userToInsert: Omit<DB_User, "id"> = {
     first_name: userData.firstName,
     last_name: userData.lastName,
     phone_number: userData.phoneNumber,
@@ -39,62 +46,69 @@ export const createUser = async (
     role: userData.role,
     password: await encrypt(INITIAL_PASSWORD),
     customer_id: userData.customerId,
-    active_vehicle_id: "",
+    active_vehicle_id:
+      userData.vehicleIds?.length === 1 ? userData.vehicleIds[0] : null,
   };
 
   const insertedRows = await new QueryBuilder()
     .insert({
       tableName: "users",
-      data: dataToInsert,
+      data: userToInsert,
     })
     .execute();
 
-  return insertedRows[0];
-};
+  const insertedUser: DB_User = insertedRows[0];
 
-type UpsertData = Partial<User & { vehicleIds: string[] }>;
-
-// ToDo - this function should be wrapped in a transaction
-export const upsertUser = async (user: UpsertData): Promise<DB_User> => {
-  const dataToUpsert: Partial<DB_User> = {
-    id: user.id,
-    first_name: user.firstName,
-    last_name: user.lastName,
-    phone_number: user.phoneNumber,
-    email: user.email,
-    password: user.password,
-    customer_id: user.customerId,
-    active_vehicle_id: user.activeVehicleId,
-  };
-
-  if (dataToUpsert.password) {
-    dataToUpsert.password = await encrypt(dataToUpsert.password);
-  }
-
-  const upsertedRows: DB_User[] = await new QueryBuilder()
-    .upsert({
-      tableName: "users",
-      data: dataToUpsert,
-      conflictingColumnNames: ["id"],
-    })
-    .execute();
-
-  const upsertedUser = upsertedRows[0];
-
-  if (user.vehicleIds) {
-    const data = user.vehicleIds.map((vehicleId) => ({
-      user_id: upsertedUser.id,
-      vehicle_id: vehicleId,
+  if (userData.vehicleIds) {
+    const data = userData.vehicleIds.map((id) => ({
+      user_id: insertedUser.id,
+      vehicle_id: id,
     }));
 
     await new QueryBuilder()
-      .upsert({
-        tableName: "user_vehicles",
-        data,
-        conflictingColumnNames: ["vehicle_id"],
-      })
+      .insert({ tableName: "user_vehicles", data })
       .execute();
   }
 
-  return upsertedUser;
+  return insertedUser;
+};
+
+type UpdateUserData = Partial<
+  Omit<User, "password" | "activeVehicleId"> & { vehicleIds?: string[] }
+>;
+
+export const updateUser = async (
+  userData: UpdateUserData
+): Promise<DB_User> => {
+  const userToUpdate: Partial<Omit<DB_User, "password" | "activeVehicleId">> = {
+    id: userData.id,
+    first_name: userData.firstName,
+    last_name: userData.lastName,
+    phone_number: userData.phoneNumber,
+    email: userData.email,
+    role: userData.role,
+    customer_id: userData.customerId,
+  };
+
+  const updatedRows = await new QueryBuilder()
+    .update({
+      tableName: "users",
+      data: userToUpdate,
+    })
+    .execute();
+
+  const updatedUser: DB_User = updatedRows[0];
+
+  if (userData.vehicleIds) {
+    const data = userData.vehicleIds.map((id) => ({
+      user_id: updatedUser.id,
+      vehicle_id: id,
+    }));
+
+    await new QueryBuilder()
+      .update({ tableName: "user_vehicles", data })
+      .execute();
+  }
+
+  return updatedUser;
 };
