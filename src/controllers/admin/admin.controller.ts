@@ -80,8 +80,9 @@ type UpdateUserData = Partial<
 export const updateUser = async (
   userData: UpdateUserData
 ): Promise<DB_User> => {
-  const userToUpdate: Partial<Omit<DB_User, "password" | "activeVehicleId">> = {
-    id: userData.id,
+  const userToUpdate: Partial<
+    Omit<DB_User, "id" | "password" | "activeVehicleId">
+  > = {
     first_name: userData.firstName,
     last_name: userData.lastName,
     phone_number: userData.phoneNumber,
@@ -95,6 +96,7 @@ export const updateUser = async (
       tableName: "users",
       data: userToUpdate,
     })
+    .where({ id: userData.id })
     .execute();
 
   const updatedUser: DB_User = updatedRows[0];
