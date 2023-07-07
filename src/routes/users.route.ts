@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { InvalidLogin, UserDoesntExist, usersController } from "../controllers";
-import { getUserDataFromCookie, setSessionCookie } from "../utils";
+import { getUserDataFromCookie, setAuthCookie } from "../utils";
 import { validateLogin } from "../controllers/users/users.controller";
 
 const router = express.Router();
@@ -18,7 +18,7 @@ router.post("/login", async (req: Request, res: Response) => {
 
   try {
     const userData = await validateLogin(phoneNumber, password);
-    setSessionCookie(res, userData).json({ userData });
+    setAuthCookie(res, userData).json({ userData });
   } catch (e) {
     console.error(e);
 
