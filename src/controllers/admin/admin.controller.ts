@@ -1,13 +1,8 @@
-import { DB_Customer, DB_User, DB_UserVehicles, User } from "../../models";
+import { DB_Customer, DB_User, DB_UserVehicles } from "../../models";
 import { encrypt } from "../../utils";
 import { QueryBuilder } from "../../db";
 import { INITIAL_PASSWORD } from "./consts";
-import { dbClient } from "../../db/client";
-
-type CustomerUser = Pick<
-  DB_User,
-  "id" | "first_name" | "last_name" | "phone_number" | "email" | "role"
-> & { vehicle_ids: Array<DB_UserVehicles["vehicle_id"]> };
+import { CreateUserData, CustomerUser, UpdateUserData } from "./types";
 
 export const getCustomerUsers = async (
   customerId: DB_Customer["id"]
@@ -20,7 +15,7 @@ export const getCustomerUsers = async (
       "phone_number",
       "email",
       "role",
-      dbClient.raw("ARRAY_AGG(user_vehicles.vehicle_id) as vehicle_ids")
+      QueryBuilder.raw("ARRAY_AGG(user_vehicles.vehicle_id) as vehicle_ids")
     )
     .from("users")
     .leftJoin("user_vehicles", "users.id", "user_vehicles.user_id")
@@ -29,15 +24,7 @@ export const getCustomerUsers = async (
     .execute();
 };
 
-type CreateUserData = Omit<User, "id" | "password" | "activeVehicleId"> & {
-  vehicleIds?: string[];
-};
-
-// ToDo - the create/updateUser functions should be wrapped in a transaction
-
-export const createUser = async (
-  userData: CreateUserData
-): Promise<DB_User> => {
+const insertUserToDB = async (userData: CreateUserData): Promise<DB_User> => {
   const userToInsert: Omit<DB_User, "id"> = {
     first_name: userData.firstName,
     last_name: userData.lastName,
@@ -57,29 +44,38 @@ export const createUser = async (
     })
     .execute();
 
-  const insertedUser: DB_User = insertedRows[0];
+  return insertedRows[0];
+};
+
+const insertUserVehiclesToDB = async (
+  userId: DB_User["id"],
+  vehicleIds: Array<DB_UserVehicles["vehicle_id"]>
+): Promise<void> => {
+  const data = vehicleIds.map((id) => ({
+    user_id: userId,
+    vehicle_id: id,
+  }));
+
+  await new QueryBuilder()
+    .insert({ tableName: "user_vehicles", data })
+    .execute();
+};
+
+// ToDo - the create/updateUser functions should be wrapped in a transaction
+
+export const createUser = async (
+  userData: CreateUserData
+): Promise<DB_User> => {
+  const insertedUser = await insertUserToDB(userData);
 
   if (userData.vehicleIds) {
-    const data = userData.vehicleIds.map((id) => ({
-      user_id: insertedUser.id,
-      vehicle_id: id,
-    }));
-
-    await new QueryBuilder()
-      .insert({ tableName: "user_vehicles", data })
-      .execute();
+    await insertUserVehiclesToDB(insertedUser.id, userData.vehicleIds);
   }
 
   return insertedUser;
 };
 
-type UpdateUserData = Partial<
-  Omit<User, "password" | "activeVehicleId"> & { vehicleIds?: string[] }
->;
-
-export const updateUser = async (
-  userData: UpdateUserData
-): Promise<DB_User> => {
+const updateUserInDB = async (userData: UpdateUserData): Promise<DB_User> => {
   const userToUpdate: Partial<
     Omit<DB_User, "id" | "password" | "activeVehicleId">
   > = {
@@ -99,17 +95,22 @@ export const updateUser = async (
     .where({ id: userData.id })
     .execute();
 
-  const updatedUser: DB_User = updatedRows[0];
+  return updatedRows[0];
+};
+
+export const updateUser = async (
+  userData: UpdateUserData
+): Promise<DB_User> => {
+  const updatedUser = await updateUserInDB(userData);
 
   if (userData.vehicleIds) {
-    const data = userData.vehicleIds.map((id) => ({
-      user_id: updatedUser.id,
-      vehicle_id: id,
-    }));
-
     await new QueryBuilder()
-      .update({ tableName: "user_vehicles", data })
+      .delete()
+      .from("user_vehicles")
+      .where({ user_id: userData.id })
       .execute();
+
+    await insertUserVehiclesToDB(userData.id, userData.vehicleIds);
   }
 
   return updatedUser;

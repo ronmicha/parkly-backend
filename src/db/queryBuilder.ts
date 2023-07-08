@@ -14,6 +14,10 @@ type UpsertOptions = WriteOptions & {
 export class QueryBuilder {
   private query = dbClient.queryBuilder();
 
+  static raw(query: string) {
+    return dbClient.raw(query);
+  }
+
   select(...columnNames: (string | unknown)[]): this {
     this.query.select(columnNames);
     return this;
@@ -47,6 +51,11 @@ export class QueryBuilder {
       .onConflict(conflictingColumnNames)
       .merge()
       .returning(returningColumns || ["*"]);
+    return this;
+  }
+
+  delete(): this {
+    this.query.del();
     return this;
   }
 
