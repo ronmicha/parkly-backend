@@ -1,11 +1,11 @@
 import express, { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
-import { adminController } from "../controllers";
-import { User } from "../models";
+import { adminController } from "../../controllers";
+import { User } from "../../models";
 
 const router = express.Router();
 
-router.get("/users", async (req: Request, res: Response) => {
+router.get("/", async (req: Request, res: Response) => {
   const customerId = req.query.customerId as string;
 
   if (!customerId) {
@@ -26,7 +26,7 @@ router.get("/users", async (req: Request, res: Response) => {
   }
 });
 
-router.post("/create-user", async (req: Request, res: Response) => {
+router.post("/create", async (req: Request, res: Response) => {
   // ToDo: validate that all relevant fields exist in req.body
 
   try {
@@ -40,7 +40,7 @@ router.post("/create-user", async (req: Request, res: Response) => {
   }
 });
 
-router.post("/update-user", async (req: Request, res: Response) => {
+router.post("/update", async (req: Request, res: Response) => {
   // ToDo: validate that all relevant fields exist in req.body
 
   try {
@@ -54,7 +54,7 @@ router.post("/update-user", async (req: Request, res: Response) => {
   }
 });
 
-router.post("/delete-users", async (req: Request, res: Response) => {
+router.post("/delete", async (req: Request, res: Response) => {
   const userIds = req.body.userIds as Array<User["id"]>;
 
   if (!userIds) {

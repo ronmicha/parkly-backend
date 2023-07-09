@@ -7,7 +7,7 @@ import generalRouter from "./routes/general.route";
 import parkingAreasRouter from "./routes/parkingAreas.route";
 import parkingSlotsRouter from "./routes/parkingSlots.route";
 import usersRouter from "./routes/users.route";
-import adminRouter from "./routes/admin.route";
+import adminRouter from "./routes/admin";
 
 dotenv.config();
 
