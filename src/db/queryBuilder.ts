@@ -1,4 +1,7 @@
 import { dbClient } from "./client";
+import { TQueryBuilder, Transaction } from "./types";
+
+type TrxCallback = (trx: Transaction) => Promise<any>;
 
 type WriteOptions = {
   tableName: string;
@@ -10,9 +13,18 @@ type UpsertOptions = WriteOptions & {
   conflictingColumnNames: string[];
 };
 
-// ToDo - add support of transactions
 export class QueryBuilder {
-  private query = dbClient.queryBuilder();
+  private readonly query: TQueryBuilder;
+  private readonly trx?: Transaction;
+
+  constructor(trx?: Transaction) {
+    this.query = dbClient.queryBuilder();
+    this.trx = trx;
+  }
+
+  static async transaction<T>(callback: TrxCallback): Promise<T> {
+    return await dbClient.transaction<T>(callback);
+  }
 
   static raw(query: string) {
     return dbClient.raw(query);
@@ -88,7 +100,10 @@ export class QueryBuilder {
     return this;
   }
 
-  async execute() {
-    return this.query.then((rows) => rows);
+  async execute<T>() {
+    if (this.trx) {
+      return this.query.transacting(this.trx);
+    }
+    return this.query.then<T>((rows) => rows);
   }
 }

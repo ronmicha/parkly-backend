@@ -13,5 +13,5 @@ export const getCustomerParkingAreas = async (
       "customer_parking_areas.parking_area_id"
     )
     .where({ customer_id: customerId })
-    .execute();
+    .execute<DB_ParkingArea[]>();
 };

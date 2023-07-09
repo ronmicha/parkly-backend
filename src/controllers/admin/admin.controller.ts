@@ -1,6 +1,6 @@
 import { DB_Customer, DB_User, DB_UserVehicles } from "../../models";
 import { encrypt } from "../../utils";
-import { QueryBuilder } from "../../db";
+import { QueryBuilder, Transaction } from "../../db";
 import { INITIAL_PASSWORD } from "./consts";
 import { CreateUserData, CustomerUser, UpdateUserData } from "./types";
 
@@ -21,10 +21,13 @@ export const getCustomerUsers = async (
     .leftJoin("user_vehicles", "users.id", "user_vehicles.user_id")
     .where({ customer_id: customerId })
     .groupBy("users.id")
-    .execute();
+    .execute<CustomerUser[]>();
 };
 
-const insertUserToDB = async (userData: CreateUserData): Promise<DB_User> => {
+const insertUserToDB = async (
+  userData: CreateUserData,
+  trx?: Transaction
+): Promise<DB_User> => {
   const userToInsert: Omit<DB_User, "id"> = {
     first_name: userData.firstName,
     last_name: userData.lastName,
@@ -37,45 +40,49 @@ const insertUserToDB = async (userData: CreateUserData): Promise<DB_User> => {
       userData.vehicleIds?.length === 1 ? userData.vehicleIds[0] : null,
   };
 
-  const insertedRows = await new QueryBuilder()
+  const insertedRows = await new QueryBuilder(trx)
     .insert({
       tableName: "users",
       data: userToInsert,
     })
-    .execute();
+    .execute<DB_User[]>();
 
   return insertedRows[0];
 };
 
 const insertUserVehiclesToDB = async (
   userId: DB_User["id"],
-  vehicleIds: Array<DB_UserVehicles["vehicle_id"]>
+  vehicleIds: Array<DB_UserVehicles["vehicle_id"]>,
+  trx?: Transaction
 ): Promise<void> => {
   const data = vehicleIds.map((id) => ({
     user_id: userId,
     vehicle_id: id,
   }));
 
-  await new QueryBuilder()
+  await new QueryBuilder(trx)
     .insert({ tableName: "user_vehicles", data })
-    .execute();
+    .execute<DB_UserVehicles[]>();
 };
-
-// ToDo - the create/updateUser functions should be wrapped in a transaction
 
 export const createUser = async (
   userData: CreateUserData
 ): Promise<DB_User> => {
-  const insertedUser = await insertUserToDB(userData);
+  return await QueryBuilder.transaction<DB_User>(async (trx) => {
+    const insertedUser = await insertUserToDB(userData, trx);
 
-  if (userData.vehicleIds) {
-    await insertUserVehiclesToDB(insertedUser.id, userData.vehicleIds);
-  }
+    if (userData.vehicleIds) {
+      await insertUserVehiclesToDB(insertedUser.id, userData.vehicleIds, trx);
+    }
 
-  return insertedUser;
+    return insertedUser;
+  });
 };
 
-const updateUserInDB = async (userData: UpdateUserData): Promise<DB_User> => {
+const updateUserInDB = async (
+  userData: UpdateUserData,
+  trx?: Transaction
+): Promise<DB_User> => {
   const userToUpdate: Partial<
     Omit<DB_User, "id" | "password" | "activeVehicleId">
   > = {
@@ -87,13 +94,13 @@ const updateUserInDB = async (userData: UpdateUserData): Promise<DB_User> => {
     customer_id: userData.customerId,
   };
 
-  const updatedRows = await new QueryBuilder()
+  const updatedRows = await new QueryBuilder(trx)
     .update({
       tableName: "users",
       data: userToUpdate,
     })
     .where({ id: userData.id })
-    .execute();
+    .execute<DB_User[]>();
 
   return updatedRows[0];
 };
@@ -101,17 +108,17 @@ const updateUserInDB = async (userData: UpdateUserData): Promise<DB_User> => {
 export const updateUser = async (
   userData: UpdateUserData
 ): Promise<DB_User> => {
-  const updatedUser = await updateUserInDB(userData);
+  return await QueryBuilder.transaction<DB_User>(async (trx) => {
+    await updateUserInDB(userData, trx);
 
-  if (userData.vehicleIds) {
-    await new QueryBuilder()
-      .delete()
-      .from("user_vehicles")
-      .where({ user_id: userData.id })
-      .execute();
+    if (userData.vehicleIds) {
+      await new QueryBuilder(trx)
+        .delete()
+        .from("user_vehicles")
+        .where({ user_id: userData.id })
+        .execute<DB_UserVehicles[]>();
 
-    await insertUserVehiclesToDB(userData.id, userData.vehicleIds);
-  }
-
-  return updatedUser;
+      await insertUserVehiclesToDB(userData.id, userData.vehicleIds, trx);
+    }
+  });
 };

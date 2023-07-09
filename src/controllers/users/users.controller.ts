@@ -6,11 +6,11 @@ import { InvalidLogin, UserDoesntExist } from "./errors";
 const tableName = "users";
 
 export const getUser = async (options: Partial<DB_User>): Promise<DB_User> => {
-  const rows: DB_User[] = await new QueryBuilder()
+  const rows = await new QueryBuilder()
     .select("*")
     .from(tableName)
     .where(options)
-    .execute();
+    .execute<DB_User[]>();
 
   return rows[0];
 };

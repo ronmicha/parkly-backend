@@ -17,7 +17,7 @@ export const getParkingSlots = async (
     )
     .from(tableName)
     .where({ parking_area_id: parkingAreaId })
-    .execute();
+    .execute<DB_ParkingSlot[]>();
 };
 
 export const updateSlotStatus = async (
@@ -27,5 +27,5 @@ export const updateSlotStatus = async (
   await new QueryBuilder()
     .update({ tableName, data: { vehicle_id: vehicleId } })
     .where({ id: slotId })
-    .execute();
+    .execute<DB_ParkingSlot[]>();
 };
