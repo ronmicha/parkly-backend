@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { adminController } from "../controllers";
+import { User } from "../models";
 
 const router = express.Router();
 
@@ -45,6 +46,27 @@ router.post("/update-user", async (req: Request, res: Response) => {
   try {
     const userData = await adminController.updateUser(req.body);
     res.json({ userData });
+  } catch (e) {
+    console.error(e);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: (e as Error).message });
+  }
+});
+
+router.post("/delete-users", async (req: Request, res: Response) => {
+  const userIds = req.body.userIds as Array<User["id"]>;
+
+  if (!userIds) {
+    res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ error: "Parameter 'userIds' is missing" });
+    return;
+  }
+
+  try {
+    await adminController.deleteUsers(userIds);
+    res.sendStatus(StatusCodes.OK);
   } catch (e) {
     console.error(e);
     res

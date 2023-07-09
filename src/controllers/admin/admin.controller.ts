@@ -1,4 +1,4 @@
-import { DB_Customer, DB_User, DB_UserVehicles } from "../../models";
+import { DB_Customer, DB_User, DB_UserVehicles, User } from "../../models";
 import { encrypt } from "../../utils";
 import { QueryBuilder, Transaction } from "../../db";
 import { INITIAL_PASSWORD } from "./consts";
@@ -109,7 +109,7 @@ export const updateUser = async (
   userData: UpdateUserData
 ): Promise<DB_User> => {
   return await QueryBuilder.transaction<DB_User>(async (trx) => {
-    await updateUserInDB(userData, trx);
+    const updatedUser = await updateUserInDB(userData, trx);
 
     if (userData.vehicleIds) {
       await new QueryBuilder(trx)
@@ -120,5 +120,25 @@ export const updateUser = async (
 
       await insertUserVehiclesToDB(userData.id, userData.vehicleIds, trx);
     }
+
+    return updatedUser;
+  });
+};
+
+export const deleteUsers = async (
+  userIds: Array<User["id"]>
+): Promise<void> => {
+  await QueryBuilder.transaction(async (trx) => {
+    await new QueryBuilder(trx)
+      .delete()
+      .from("user_vehicles")
+      .whereIn("user_id", userIds)
+      .execute();
+
+    await new QueryBuilder(trx)
+      .delete()
+      .from("users")
+      .whereIn("id", userIds)
+      .execute();
   });
 };

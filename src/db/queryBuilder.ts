@@ -95,6 +95,11 @@ export class QueryBuilder {
     return this;
   }
 
+  whereIn(columnName: string, values: string[]): this {
+    this.query.whereIn(columnName, values);
+    return this;
+  }
+
   groupBy(...columnNames: string[]) {
     this.query.groupBy(columnNames);
     return this;
