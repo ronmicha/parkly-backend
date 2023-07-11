@@ -9,6 +9,7 @@ const AUTH_COOKIE_AGE = 365 * 24 * 60 * 60 * 1000; // 1 year in milliseconds
 const AUTH_COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
   secure: true,
+  signed: true,
   sameSite: "none",
   maxAge: AUTH_COOKIE_AGE,
 };
