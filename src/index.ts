@@ -1,4 +1,5 @@
 import express, { Express } from "express";
+import compression from "compression";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -14,18 +15,19 @@ dotenv.config();
 const app: Express = express();
 const { PORT } = process.env;
 
+app.use(compression());
 app.use(express.json());
 app.use(cors({ origin: true, credentials: true }));
 app.use(cookieParser());
 
-app.use(basicAuth);
-
 app.use("/", generalRouter);
+
+app.use(basicAuth());
 app.use("/parking-areas", parkingAreasRouter);
 app.use("/parking-slots", parkingSlotsRouter);
 app.use("/users", usersRouter);
 
-app.use(adminAuth);
+app.use(adminAuth());
 app.use("/admin", adminRouter);
 
 app.listen(PORT, () => {
