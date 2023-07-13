@@ -1,4 +1,4 @@
-import { DB_User, DB_UserVehicles, User } from "../../models";
+import { DB_User, DB_UserVehicles, ParkingSlot, User } from "../../models";
 
 export type CustomerUser = Pick<
   DB_User,
@@ -18,3 +18,8 @@ export type UpdateUserData = Pick<User, "id"> &
       vehicleIds?: string[];
     }
   >;
+
+export type CreateParkingSlotData = Omit<ParkingSlot, "id" | "vehicleId">;
+
+export type UpdateParkingSlotData = Pick<ParkingSlot, "id"> &
+  Partial<Omit<ParkingSlot, "id" | "vehicleId">>;

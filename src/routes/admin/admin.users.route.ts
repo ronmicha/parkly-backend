@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
-import { adminController } from "../../controllers";
+import { adminUsersController } from "../../controllers";
 import { User } from "../../models";
 
 const router = express.Router();
@@ -16,7 +16,7 @@ router.get("/", async (req: Request, res: Response) => {
   }
 
   try {
-    const users = await adminController.getCustomerUsers(customerId);
+    const users = await adminUsersController.getCustomerUsers(customerId);
     res.json({ users });
   } catch (e) {
     console.error(e);
@@ -30,7 +30,7 @@ router.post("/create", async (req: Request, res: Response) => {
   // ToDo: validate that all relevant fields exist in req.body
 
   try {
-    const userData = await adminController.createUser(req.body);
+    const userData = await adminUsersController.createUser(req.body);
     res.json({ userData });
   } catch (e) {
     console.error(e);
@@ -44,7 +44,7 @@ router.post("/update", async (req: Request, res: Response) => {
   // ToDo: validate that all relevant fields exist in req.body
 
   try {
-    const userData = await adminController.updateUser(req.body);
+    const userData = await adminUsersController.updateUser(req.body);
     res.json({ userData });
   } catch (e) {
     console.error(e);
@@ -65,7 +65,7 @@ router.post("/delete", async (req: Request, res: Response) => {
   }
 
   try {
-    await adminController.deleteUsers(userIds);
+    await adminUsersController.deleteUsers(userIds);
     res.sendStatus(StatusCodes.OK);
   } catch (e) {
     console.error(e);
