@@ -1,6 +1,5 @@
 import express, { Express } from "express";
 import compression from "compression";
-import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { adminAuth, basicAuth } from "./middlewares";
@@ -9,8 +8,6 @@ import parkingAreasRouter from "./routes/parkingAreas.route";
 import parkingSlotsRouter from "./routes/parkingSlots.route";
 import usersRouter from "./routes/users.route";
 import adminRouter from "./routes/admin";
-
-dotenv.config();
 
 const app: Express = express();
 const { PORT } = process.env;
