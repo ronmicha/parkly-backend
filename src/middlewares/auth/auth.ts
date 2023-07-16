@@ -1,6 +1,6 @@
 import { RequestHandler } from "express-serve-static-core";
 import { StatusCodes } from "http-status-codes";
-import { getUserDataFromCookie } from "../utils";
+import { getUserDataFromCookie } from "../../utils";
 
 const basicAuthHandler: RequestHandler = (req, res, next) => {
   const userData = getUserDataFromCookie(req);

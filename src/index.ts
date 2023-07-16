@@ -2,7 +2,7 @@ import express, { Express } from "express";
 import compression from "compression";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { adminAuth, basicAuth } from "./middlewares";
+import { adminAuth, basicAuth, logging } from "./middlewares";
 import generalRouter from "./routes/general.route";
 import parkingAreasRouter from "./routes/parkingAreas.route";
 import parkingSlotsRouter from "./routes/parkingSlots.route";
@@ -13,6 +13,7 @@ const app: Express = express();
 const { PORT } = process.env;
 
 app.use(compression());
+app.use(logging());
 app.use(express.json());
 app.use(cors({ origin: true, credentials: true }));
 app.use(cookieParser());

@@ -5,7 +5,7 @@ import { InvalidLogin, UserDoesntExist, usersController } from "../controllers";
 
 const router = express.Router();
 
-router.get("/", (req: Request, res: Response) => {
+router.get("/", async (req: Request, res: Response) => {
   res.json({ status: "OK" });
 });
 
