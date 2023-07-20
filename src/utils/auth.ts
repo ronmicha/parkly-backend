@@ -25,5 +25,5 @@ export const setAuthCookie = (res: Response, user: DB_User): Response => {
 export const getUserDataFromCookie = (
   req: Request
 ): AuthCookieValue | undefined => {
-  return req.cookies[AUTH_COOKIE_NAME];
+  return req.signedCookies[AUTH_COOKIE_NAME];
 };
