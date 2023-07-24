@@ -6,7 +6,6 @@
   "scripts": {
     "start": "npx nodemon -r dotenv/config src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rimraf dist && tsc && git add dist",
     "tsc": "tsc --noEmit",
     "format:check": "prettier --check .",
     "format:write": "prettier --write .",
