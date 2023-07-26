@@ -22,13 +22,13 @@ app.use(cookieParser(secret));
 
 app.use("/", generalRouter);
 
+app.use(adminAuth());
+app.use("/admin", adminRouter);
+
 app.use(basicAuth());
 app.use("/parking-areas", parkingAreasRouter);
 app.use("/parking-slots", parkingSlotsRouter);
 app.use("/users", usersRouter);
-
-app.use(adminAuth());
-app.use("/admin", adminRouter);
 
 app.listen(PORT, () => {
   console.log(`⚡️ Server is running at http://localhost:${PORT}`);
